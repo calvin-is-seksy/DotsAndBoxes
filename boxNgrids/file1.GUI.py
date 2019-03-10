@@ -292,18 +292,20 @@ class BoxesandGridsGame():
         temp_h = self.boardh
         temp_v = self.boardv
 
-        next_move = self.list_possible_moves(temp_h, temp_v);
+        # next_move = self.list_possible_moves(temp_h, temp_v);
+        #
+        # best_move = next_move[0];
+        # best_score = 0;
+        #
+        # for move in next_move:
+        #
+        #     temp_h, temp_v, score = self.next_state(move, temp_h, temp_v);
+        #
+        #     if (score > best_score):
+        #         best_score = score;
+        #         best_move = move;
 
-        best_move = next_move[0];
-        best_score = 0;
-
-        for move in next_move:
-
-            temp_h, temp_v, score = self.next_state(move, temp_h, temp_v);
-
-            if (score > best_score):
-                best_score = score;
-                best_move = move;
+        best_move = self.minimax(self.boardh, self.boardv)
 
         self.make_move(best_move, 0);
 
@@ -318,7 +320,8 @@ class BoxesandGridsGame():
 
         ## change the next line of minimax/ aplpha-beta pruning according to your input and output requirments
 
-        next_move = self.minimax(self.boardh, self.boardv)
+        # next_move = self.minimax(self.boardh, self.boardv)
+        next_move = self.alphabetapruning(self.boardh, self.boardv)
         # next_move_alpha=self.alphabetapruning();
 
         self.make_move(next_move, 1);
@@ -334,6 +337,7 @@ class BoxesandGridsGame():
 
     def minimax(self, horizontal, vertical, maxDepth=1):
         self.maxDepth = maxDepth
+        self.depth = 0
 
         ######## APPROACH 2: calling max on myself
         bestMove = random.choice(self.list_possible_moves(horizontal, vertical))
@@ -341,7 +345,6 @@ class BoxesandGridsGame():
 
         print('All possible moves: {}'.format(self.list_possible_moves(horizontal, vertical)))
         print('Random init of bestMove: {}, {}'.format(bestMove, v))
-        self.depth = 0
 
         for newMove in self.list_possible_moves(horizontal, vertical):
             newH, newV, score = self.next_state(newMove, horizontal, vertical)
@@ -397,53 +400,88 @@ class BoxesandGridsGame():
         return v
 
     # ALPHA BETA PRUNING
-    def alphabetapruning(self, horizontal, vertical, maxDepth=3):
-        v = float('-inf')
+    def alphabetapruning(self, horizontal, vertical, maxDepth=13):
         a = float('-inf')
         b = float('inf')
         self.maxDepth = maxDepth
+        self.depth = 0
 
-        randomMove = self.list_possible_moves(horizontal, vertical)[0]
-        bestMove = (self.increment_score(randomMove,horizontal,vertical), randomMove)
+        bestMove = random.choice(self.list_possible_moves(horizontal, vertical))
+        v = self.increment_score(bestMove, horizontal, vertical)
+
+        print('All possible moves: {}'.format(self.list_possible_moves(horizontal, vertical)))
+        print('Random init of bestMove: {}, {}'.format(bestMove, v))
 
         for newMove in self.list_possible_moves(horizontal, vertical):
-            self.depth = 0
             newH, newV, score = self.next_state(newMove, horizontal, vertical)
+            v_ = self.minValAB(newMove, newH, newV, a, b)
 
-            v_ = self.maxValAB(newMove, newH, newV, a, b)  # TODO: Double check if this is right
-            if v_ > v: v = v_
-            if v_ >= b: bestMove = max([randomMove, bestMove], key=lambda item: item[0])
-            if v_ > a: a = v_
+            print('exploring possible move: {}, score: {}, v_: {}'.format(newMove, score, v_))
 
-        return bestMove[1]
+            if v_ > v:
+                v = v_
+                print('updating to best move^')
+                bestMove = newMove
 
+            if v_ >= b:
+                print('BETA Pruning: b = {}'.format(b))
+                break
+
+            if v_ > a:
+                print('ALPHA Update^')
+                a = v_
+
+        return bestMove
 
     def maxValAB(self, move, h_matrix, v_matrix, a, b):
-        if self.game_ends(h_matrix, v_matrix): # TODO: check this is the right condition
-            return self.increment_score(move, h_matrix, v_matrix)
+
+        print('MAX: depth = {}, a = {}, b = {}'.format(self.depth, a, b))
+
+        self.depth += 1
+        if self.depth == self.maxDepth or self.game_ends(h_matrix, v_matrix):  # TODO: check this is the right condition
+            self.depth -= 1
+            return self.increment_score(move, h_matrix, v_matrix) * (self.depth + 1)
 
         v = float('-inf')
         for newMove in self.list_possible_moves(h_matrix, v_matrix):
             newH, newV, score = self.next_state(newMove, h_matrix, v_matrix)
             v_ = self.minValAB(newMove, newH, newV, a, b)
+            print('After recursive return: v = {}, v_ = {}, a = {}, b = {}'.format(v, v_, a, b))
+            if v_ > v:
+                v = v_
 
-            if v_ > v: v = v_
-            if v_ >= b: return v
-            if v_ > a: a = v_
+            if v_ >= b:
+                print('BETA Pruning: b = {}'.format(b))
+                return v
+
+            if v_ > a:
+                print('ALPHA Update^')
+                a = v_
+
         return v
 
     def minValAB(self, move, h_matrix, v_matrix, a, b):
-        if self.game_ends(h_matrix, v_matrix): # TODO: check this is the right condition
-            return self.increment_score(move, h_matrix, v_matrix)
+
+        print('MIN: depth = {}, a = {}, b = {}'.format(self.depth, a, b))
+
+        self.depth += 1
+        if self.depth == self.maxDepth or self.game_ends(h_matrix, v_matrix):  # TODO: check this is the right condition
+            self.depth -= 1
+            return self.increment_score(move, h_matrix, v_matrix) * (self.depth + 1)
 
         v = float('inf')
         for newMove in self.list_possible_moves(h_matrix, v_matrix):
             newH, newV, score = self.next_state(newMove, h_matrix, v_matrix)
             v_ = self.maxValAB(newMove, newH, newV, a, b)
-
-            if v_ < v: v = v_
-            if v_ <= a: return v
-            if v_ < b: b = v_
+            print('After recursive return: v = {}, v_ = {}, a = {}, b = {}'.format(v, v_, a,b))
+            if v_ < v:
+                v = v_
+            if v_ <= a:
+                print('ALPHA Pruning: a = {}'.format(a))
+                return v
+            if v_ < b:
+                print('BETA Update')
+                b = v_
 
         return v
 

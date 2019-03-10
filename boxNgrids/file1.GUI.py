@@ -336,17 +336,18 @@ class BoxesandGridsGame():
         self.maxDepth = maxDepth
 
         ######## APPROACH 2: calling max on myself
-        bestMove = random.choice(self.list_possible_moves(horizontal,vertical))
+        bestMove = random.choice(self.list_possible_moves(horizontal, vertical))
         v = self.increment_score(bestMove, horizontal, vertical)
 
-        print('All possible moves: {}'.format(self.list_possible_moves(horizontal,vertical)))
+        print('All possible moves: {}'.format(self.list_possible_moves(horizontal, vertical)))
         print('Random init of bestMove: {}, {}'.format(bestMove, v))
         self.depth = 0
 
         for newMove in self.list_possible_moves(horizontal, vertical):
             newH, newV, score = self.next_state(newMove, horizontal, vertical)
-            print('exploring possible move: {}, score: {}'.format(newMove, score))
             v_ = self.minVal(newMove, newH, newV)
+
+            print('exploring possible move: {}, score: {}, v_: {}'.format(newMove, score, v_))
 
             if v_ > v:
                 v = v_
@@ -354,30 +355,6 @@ class BoxesandGridsGame():
                 bestMove = newMove
 
         return bestMove
-
-        ######### APPROACH 1: calling max on all possible moves
-        # randomMove = self.list_possible_moves(horizontal, vertical)[0]
-        # bestMove = (self.increment_score(randomMove, horizontal, vertical), randomMove)
-        #
-        # for newMove in self.list_possible_moves(horizontal, vertical):
-        #     self.depth = 0
-        #     v = float('-inf')
-        #     newH, newV, score = self.next_state(newMove, horizontal, vertical)
-        #
-        #     print('next possible move: {}'.format(newMove))
-        #
-        #     v_ = self.maxVal(newMove, newH, newV)  # TODO: Double check if this is right
-        #
-        #     print('V: {}, V_: {}'.format(v, v_))
-        #
-        #     if v_ > v:
-        #         v = v_
-        #         bestMove = (v, newMove)
-        #
-        #     if v == self.bestScore: break  # pre-cut the search bc this is a good move
-        #
-        # print('MOVE and SCORE: {}'.format(bestMove))
-        # return bestMove[1]
 
     def maxVal(self, move, h_matrix, v_matrix):
 
@@ -388,9 +365,8 @@ class BoxesandGridsGame():
 
         self.depth += 1
         if self.depth == self.maxDepth or self.game_ends(h_matrix, v_matrix):  # TODO: check this is the right condition
-            # print('returning from maxDepth')
             self.depth -= 1
-            return self.increment_score(move, h_matrix, v_matrix)
+            return self.increment_score(move, h_matrix, v_matrix) * (self.depth+1)
 
         v = float('-inf')
         for newMove in self.list_possible_moves(h_matrix, v_matrix):
@@ -409,9 +385,8 @@ class BoxesandGridsGame():
 
         self.depth += 1
         if self.depth == self.maxDepth or self.game_ends(h_matrix, v_matrix):  # TODO: check this is the right condition
-            # print('returning from maxDepth')
             self.depth -= 1
-            return self.increment_score(move, h_matrix, v_matrix)
+            return self.increment_score(move, h_matrix, v_matrix) * (self.depth+1)
 
         v = float('inf')
         for newMove in self.list_possible_moves(h_matrix, v_matrix):
@@ -422,7 +397,7 @@ class BoxesandGridsGame():
         return v
 
     # ALPHA BETA PRUNING
-    def alphabetapruning(self, horizontal, vertical, maxDepth=5):
+    def alphabetapruning(self, horizontal, vertical, maxDepth=3):
         v = float('-inf')
         a = float('-inf')
         b = float('inf')

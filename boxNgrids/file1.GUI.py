@@ -369,7 +369,8 @@ class BoxesandGridsGame():
         self.depth += 1
         if self.depth == self.maxDepth or self.game_ends(h_matrix, v_matrix):  # TODO: check this is the right condition
             self.depth -= 1
-            return self.increment_score(move, h_matrix, v_matrix) * (self.depth+1)
+            # return self.increment_score(move, h_matrix, v_matrix) * (self.depth+1)
+            return self.evaluate(move, h_matrix, v_matrix)
 
         v = float('-inf')
         for newMove in self.list_possible_moves(h_matrix, v_matrix):
@@ -389,7 +390,8 @@ class BoxesandGridsGame():
         self.depth += 1
         if self.depth == self.maxDepth or self.game_ends(h_matrix, v_matrix):  # TODO: check this is the right condition
             self.depth -= 1
-            return self.increment_score(move, h_matrix, v_matrix) * (self.depth+1)
+            # return self.increment_score(move, h_matrix, v_matrix) * (self.depth+1)
+            return self.evaluate(move, h_matrix, v_matrix)
 
         v = float('inf')
         for newMove in self.list_possible_moves(h_matrix, v_matrix):
@@ -440,7 +442,8 @@ class BoxesandGridsGame():
         self.depth += 1
         if self.depth == self.maxDepth or self.game_ends(h_matrix, v_matrix):  # TODO: check this is the right condition
             self.depth -= 1
-            return self.increment_score(move, h_matrix, v_matrix) * (self.depth + 1)
+            # return self.increment_score(move, h_matrix, v_matrix) * (self.depth + 1)
+            return self.evaluate(move, h_matrix, v_matrix)
 
         v = float('-inf')
         for newMove in self.list_possible_moves(h_matrix, v_matrix):
@@ -467,7 +470,8 @@ class BoxesandGridsGame():
         self.depth += 1
         if self.depth == self.maxDepth or self.game_ends(h_matrix, v_matrix):  # TODO: check this is the right condition
             self.depth -= 1
-            return self.increment_score(move, h_matrix, v_matrix) * (self.depth + 1)
+            # return self.increment_score(move, h_matrix, v_matrix) * (self.depth + 1)
+            return self.evaluate(move, h_matrix, v_matrix)
 
         v = float('inf')
         for newMove in self.list_possible_moves(h_matrix, v_matrix):
@@ -489,9 +493,8 @@ class BoxesandGridsGame():
     Write down you own evaluation strategy in the evaluation function 
     '''
 
-    def evaluate(self, horizontal, vertical):
-        value = 0;
-        return value
+    def evaluate(self, move, h_matrix, v_matrix):
+        return self.increment_score(move, h_matrix, v_matrix) * (self.depth + 1)
 
 
 bg = BoxesandGridsGame();

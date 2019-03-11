@@ -502,6 +502,6 @@ while (bg.game_ends(bg.boardh, bg.boardv) == False):
     bg.update();
     print ('Player1 :score', bg.score_player1)
     print ('Player2 :score', bg.score_player2)
-    time.sleep(2)
+    time.sleep(.5)
 time.sleep(10)
 pygame.quit()

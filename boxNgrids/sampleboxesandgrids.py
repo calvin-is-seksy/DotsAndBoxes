@@ -1,5 +1,6 @@
 import pygame
 import math
+import random
 import time 
 from copy import deepcopy
 class BoxesGame():
@@ -147,64 +148,214 @@ class BoxesGame():
                 if not temp_v[y][x]:
                     count=False;
         return count;
+
     def player1(self):
-        temp_h=self.boardh
-        temp_v=self.boardv
-        
-        next_move=self.list_possible_moves(temp_h,temp_v);
-        #print self.boardh_temp,self.boardv_temp
-        #print next_move
-        best_move=next_move[0];
-        best_score=0;
-        #print 'before loop'
-        for move in next_move:
-            
-            temp_h,temp_v,score=self.next_state(move,temp_h,temp_v);
-            #print score
-            if(score>best_score):
-                best_score=score;
-                best_move=move;
-        
-        #print 'Player 1  next moves', next_move_list
-        #print 'Player 1  move made', next_move_list[0];
-        self.make_move(best_move,0);
-        #print 'move made by player1', best_move
-        
-        #if(make_move(next))
+        temp_h = self.boardh
+        temp_v = self.boardv
+
+        # next_move = self.list_possible_moves(temp_h, temp_v);
+        #
+        # best_move = next_move[0];
+        # best_score = 0;
+        #
+        # for move in next_move:
+        #
+        #     temp_h, temp_v, score = self.next_state(move, temp_h, temp_v);
+        #
+        #     if (score > best_score):
+        #         best_score = score;
+        #         best_move = move;
+
+        best_move = self.minimax(self.boardh, self.boardv)
+
+        self.make_move(best_move, 0);
+
+    '''
+    You will make changes to the code from this part onwards
+    '''
+
     def player2(self):
-        temp_h=self.boardh
-        temp_v=self.boardv
         '''
         Call the minimax/alpha-beta pruning  function to return the optimal move
         '''
-        
+
         ## change the next line of minimax/ aplpha-beta pruning according to your input and output requirments
-        next_move=self.minimax();
-        next_move_alpha=self.alphabetapruning();
-        
-        
-        self.make_move(next_move,1);
-        print ('move_made by player 1',next_move)
-        
+
+        # next_move = self.minimax(self.boardh, self.boardv)
+        next_move = self.alphabetapruning(self.boardh, self.boardv)
+        # next_move_alpha=self.alphabetapruning();
+
+        self.make_move(next_move, 1);
+        print ('move_made by player 2', next_move)
+
     '''
     Write down the code for minimax to a certain depth do no implement minimax all the way to the final state. 
     '''
-    
-    
-    def minimax(self):
 
-        return [0,0,0];  
+    # You will implement the minimax algorithm in this function. You can change the
+    # number of input parameters of the function and the output of the function must
+    # be the optimal move made by the function.
 
+    def minimax(self, horizontal, vertical, maxDepth=1):
+        self.maxDepth = maxDepth
+        self.depth = 0
 
-    def min(self):
-        return 
+        ######## APPROACH 2: calling max on myself
+        bestMove = random.choice(self.list_possible_moves(horizontal, vertical))
+        v = self.increment_score(bestMove, horizontal, vertical)
 
+        print('All possible moves: {}'.format(self.list_possible_moves(horizontal, vertical)))
+        print('Random init of bestMove: {}, {}'.format(bestMove, v))
+
+        for newMove in self.list_possible_moves(horizontal, vertical):
+            newH, newV, score = self.next_state(newMove, horizontal, vertical)
+            v_ = self.minVal(newMove, newH, newV)
+
+            print('exploring possible move: {}, score: {}, v_: {}'.format(newMove, score, v_))
+
+            if v_ > v:
+                v = v_
+                print('updating to best move^')
+                bestMove = newMove
+
+        return bestMove
+
+    def maxVal(self, move, h_matrix, v_matrix):
+
+        # print('MAX, depth: {}, maxDepth: {}'.format(self.depth, self.maxDepth))
+        # print('MOVE: {}'.format(move))
+        # print (' Horizontal matrix', h_matrix)
+        # print (' vertical matrix', v_matrix)
+
+        self.depth += 1
+        if self.depth == self.maxDepth or self.game_ends(h_matrix, v_matrix):  # TODO: check this is the right condition
+            self.depth -= 1
+            # return self.increment_score(move, h_matrix, v_matrix) * (self.depth+1)
+            return self.evaluate(move, h_matrix, v_matrix)
+
+        v = float('-inf')
+        for newMove in self.list_possible_moves(h_matrix, v_matrix):
+            newH, newV, score = self.next_state(newMove, h_matrix, v_matrix)
+            v_ = self.minVal(newMove, newH, newV)
+            if v_ > v: v = v_
+
+        return v
+
+    def minVal(self, move, h_matrix, v_matrix):
+
+        # print('MIN, depth: {}, maxDepth: {}'.format(self.depth, self.maxDepth))
+        # print('MOVE: {}'.format(move))
+        # print (' Horizontal matrix', h_matrix)
+        # print (' vertical matrix', v_matrix)
+
+        self.depth += 1
+        if self.depth == self.maxDepth or self.game_ends(h_matrix, v_matrix):  # TODO: check this is the right condition
+            self.depth -= 1
+            # return self.increment_score(move, h_matrix, v_matrix) * (self.depth+1)
+            return self.evaluate(move, h_matrix, v_matrix)
+
+        v = float('inf')
+        for newMove in self.list_possible_moves(h_matrix, v_matrix):
+            newH, newV, score = self.next_state(newMove, h_matrix, v_matrix)
+            v_ = self.maxVal(newMove, newH, newV)
+            if v_ < v: v = v_
+
+        return v
+
+    # ALPHA BETA PRUNING
+    def alphabetapruning(self, horizontal, vertical, maxDepth=13):
+        a = float('-inf')
+        b = float('inf')
+        self.maxDepth = maxDepth
+        self.depth = 0
+
+        bestMove = random.choice(self.list_possible_moves(horizontal, vertical))
+        v = self.increment_score(bestMove, horizontal, vertical)
+
+        print('All possible moves: {}'.format(self.list_possible_moves(horizontal, vertical)))
+        print('Random init of bestMove: {}, {}'.format(bestMove, v))
+
+        for newMove in self.list_possible_moves(horizontal, vertical):
+            newH, newV, score = self.next_state(newMove, horizontal, vertical)
+            v_ = self.minValAB(newMove, newH, newV, a, b)
+
+            print('exploring possible move: {}, score: {}, v_: {}'.format(newMove, score, v_))
+
+            if v_ > v:
+                v = v_
+                print('updating to best move^')
+                bestMove = newMove
+
+            if v_ >= b:
+                print('BETA Pruning: b = {}'.format(b))
+                break
+
+            if v_ > a:
+                print('ALPHA Update^')
+                a = v_
+
+        return bestMove
+
+    def maxValAB(self, move, h_matrix, v_matrix, a, b):
+
+        print('MAX: depth = {}, a = {}, b = {}'.format(self.depth, a, b))
+
+        self.depth += 1
+        if self.depth == self.maxDepth or self.game_ends(h_matrix, v_matrix):  # TODO: check this is the right condition
+            self.depth -= 1
+            # return self.increment_score(move, h_matrix, v_matrix) * (self.depth + 1)
+            return self.evaluate(move, h_matrix, v_matrix)
+
+        v = float('-inf')
+        for newMove in self.list_possible_moves(h_matrix, v_matrix):
+            newH, newV, score = self.next_state(newMove, h_matrix, v_matrix)
+            v_ = self.minValAB(newMove, newH, newV, a, b)
+            print('After recursive return: v = {}, v_ = {}, a = {}, b = {}'.format(v, v_, a, b))
+            if v_ > v:
+                v = v_
+
+            if v_ >= b:
+                print('BETA Pruning: b = {}'.format(b))
+                return v
+
+            if v_ > a:
+                print('ALPHA Update^')
+                a = v_
+
+        return v
+
+    def minValAB(self, move, h_matrix, v_matrix, a, b):
+
+        print('MIN: depth = {}, a = {}, b = {}'.format(self.depth, a, b))
+
+        self.depth += 1
+        if self.depth == self.maxDepth or self.game_ends(h_matrix, v_matrix):  # TODO: check this is the right condition
+            self.depth -= 1
+            # return self.increment_score(move, h_matrix, v_matrix) * (self.depth + 1)
+            return self.evaluate(move, h_matrix, v_matrix)
+
+        v = float('inf')
+        for newMove in self.list_possible_moves(h_matrix, v_matrix):
+            newH, newV, score = self.next_state(newMove, h_matrix, v_matrix)
+            v_ = self.maxValAB(newMove, newH, newV, a, b)
+            print('After recursive return: v = {}, v_ = {}, a = {}, b = {}'.format(v, v_, a,b))
+            if v_ < v:
+                v = v_
+            if v_ <= a:
+                print('ALPHA Pruning: a = {}'.format(a))
+                return v
+            if v_ < b:
+                print('BETA Update')
+                b = v_
+
+        return v
 
     '''
-    Chenge the alpha beta pruning function to return the optimal move .
-    '''    
-    def alphabetapruning(self):
-        return [0,0,0];
+    Write down you own evaluation strategy in the evaluation function 
+    '''
+
+    def evaluate(self, move, h_matrix, v_matrix):
+        return self.increment_score(move, h_matrix, v_matrix) * (self.depth + 1)
      
 bg=BoxesGame();
 while (bg.game_ends(bg.boardh,bg.boardv)==False):
